@@ -3,10 +3,24 @@
 
 
 Game::Game() :
-	m_window{ sf::VideoMode{ 800U, 800U, 32U }, "SFML Game" },
+	m_window{ sf::VideoMode{ 1000U, 1000U, 32U }, "SFML Game" },
 	m_exitGame{ false }
 {
-
+	int y = -10;
+	int x = -10;
+	if (!m_font.loadFromFile("ASSETS//FONTS//aribl.ttf")) std::cout << "Error loading font" << std::endl;
+	sf::Color colour = sf::Color::Red;
+	for (auto& row : m_tiles)
+	{
+		x += 20;
+		y = -10;
+		for (auto& tile : row)
+		{
+			y += 20;
+			colour = colour == sf::Color::Red ? sf::Color::Blue : sf::Color::Red;
+			tile = new Tile(0, sf::Vector2f(0.0f, 0.0f), sf::Vector2f(x, y), 20.0f, 20.0f, m_font, colour);
+		}
+	}
 }
 
 
@@ -73,7 +87,13 @@ void Game::update(sf::Time t_deltaTime)
 void Game::render()
 {
 	m_window.clear(sf::Color::White);
-
+	for (auto& row : m_tiles)
+	{
+		for (auto& tile : row)
+		{
+			m_window.draw(*tile);
+		}
+	}
 	m_window.display();
 }
 
