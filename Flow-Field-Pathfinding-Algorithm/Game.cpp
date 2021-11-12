@@ -11,28 +11,7 @@ Game::Game() :
 	int x = -10;
 	int id = 0;
 	if (!m_font.loadFromFile("ASSETS//FONTS//ariblk.ttf")) std::cout << "Error loading font" << std::endl;
-	sf::Color colour = sf::Color::Blue;
-	for (int row = 0; row < m_tiles.size(); row++)
-	{
-		y += 20;
-		x = -10;
-		for (int col = 0; col <m_tiles.at(row).size(); col++)
-		{
-			auto& tile = m_tiles.at(row).at(col);
-			x += 20;
-			int isTraversable = rand() % 100 + 1;
-			if (isTraversable < 5)
-			{
-				tile = new Tile(9000, sf::Vector2f(0.0f, 0.0f), sf::Vector2f(x, y), 20.0f, 20.0f, m_font, colour, false, row, col);
-			}
-			else
-			{
-				tile = new Tile(9000, sf::Vector2f(0.0f, 0.0f), sf::Vector2f(x, y), 20.0f, 20.0f, m_font, colour, true, row, col);
-			}			
-			id++;
-			tile->setId(id);
-		}
-	}
+	m_flowFieldGraph = new FlowFieldGraph(m_font, m_window);
 }
 
 
@@ -87,25 +66,19 @@ void Game::processKeys(sf::Event t_event)
 
 	if (sf::Keyboard::C == t_event.key.code)
 	{
-		for (auto& row : m_tiles)
-		{
-			for (auto& tile : row)
-			{
-				tile->setShouldDisplayCost(!tile->shouldDisplayCost());
-			}
-		}
+		m_flowFieldGraph->updateTilesCostDisplay();
 	}
 
 	if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
 	{
 		std::cout << "user pressed left mouse button.\n";
-		checkTileMouseClick(true);
+		m_flowFieldGraph->checkTileMouseClick(true, sf::Mouse::getPosition(m_window));
 	}
 
 	if (sf::Mouse::isButtonPressed(sf::Mouse::Right))
 	{
 		std::cout << "user pressed right mouse button.\n";
-		checkTileMouseClick(false);
+		m_flowFieldGraph->checkTileMouseClick(false, sf::Mouse::getPosition(m_window));
 	}
 }
 
@@ -122,104 +95,10 @@ void Game::update(sf::Time t_deltaTime)
 void Game::render()
 {
 	m_window.clear(sf::Color::White);
-	for (auto& row : m_tiles)
-	{
-		for (auto& tile : row)
-		{
-			m_window.draw(*tile);
-		}
-	}
+	m_flowFieldGraph->render();
 	m_window.display();
 }
 
-void Game::checkTileMouseClick(bool t_isLeftMouseClick)
-{
-	sf::Vector2f mousePosition = static_cast<sf::Vector2f>(sf::Mouse::getPosition(m_window));
-	for (auto& row : m_tiles)
-	{
-		for (auto& tile : row)
-		{
-			if (tile->intersectsPoint(mousePosition) && tile->isTraversable())
-			{
-				std::cout << "Intersecting with tile: " << tile->getID() << std::endl;
-				if (t_isLeftMouseClick)
-				{
-					if (!tile->isGoalNode() && !tile->isStartNode())
-					{
-						tile->setIsGoalNode(true);
-						tile->setIsStartNode(false);
-						if (m_goalNode) m_goalNode->setIsGoalNode(false);
-						m_goalNode = tile;
-						generateCostsForTiles();
-					}
-					
-				}
-				else
-				{
-					if (!tile->isGoalNode() && !tile->isStartNode())
-					{
-						tile->setIsStartNode(true);
-						tile->setIsGoalNode(false);
-						if (m_startNode) m_startNode->setIsStartNode(false);
-						m_startNode = tile;
-					}
-				}
-			}
-		}
-	}
-}
-
-void Game::generateCostsForTiles()
-{
-	for (auto& row : m_tiles)
-	{
-		for (auto& tile : row)
-		{
-			tile->setMarked(false);
-			tile->setCost(9000);
-		}
-	}
-	m_goalNode->setCost(0);
-	m_goalNode->setMarked(true);
-	sf::Vector2i goalPos = m_goalNode->getRowAndCol();
-	
-	tiles.push(m_goalNode);
-	while (!tiles.empty())
-	{
-		Tile* tile = tiles.front();
-		tiles.pop();
-		generateTileCostWithNeighbour(tile->getRowAndCol().x, tile->getRowAndCol().y);
-	}
-	m_goalNode->setCost(0);
-
-	
-	for (auto& row : m_tiles)
-	{
-		for (auto& tile : row)
-		{
-			if (!tile->isTraversable()) tile->setCost(9000);
-		}
-	}
-}
-
-void Game::generateTileCostWithNeighbour(int t_row, int t_col)
-{
-	for (int direction = 0; direction < 9; direction++)
-	{
-		if (direction == 4) continue;
-		int row = t_row + ((direction % 3) - 1);
-		int col = t_col + ((direction / 3) - 1);
-		if (row >= 0 && row < NUM_ROWS && col >= 0 && col < NUM_COLS)
-		{			
-			if (!m_tiles.at(row).at(col)->getMarked())
-			{				
-				m_tiles.at(row).at(col)->setCost(m_tiles.at(t_row).at(t_col)->getCost() + 1);								
-				m_tiles.at(row).at(col)->setMarked(true);
-				tiles.push(m_tiles.at(row).at(col));
-			}
-		}
-	}
-}
 
 
 

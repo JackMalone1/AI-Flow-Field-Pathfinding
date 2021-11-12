@@ -9,6 +9,7 @@ private:
 	sf::Vector2f m_goalVector;
 	sf::Vector2f m_position;
 	int m_cost;
+	float m_integrationFieldCost;
 	sf::Text m_displayCost;
 	sf::Font& m_font;
 	sf::RectangleShape m_shape;
@@ -54,7 +55,7 @@ public:
 		if (m_cost < 9000) m_displayCost.setString(std::to_string(m_cost));
 		else m_displayCost.setString("Max");
 
-		if (m_cost != 9000 && m_cost != 0 && m_isTraversable)
+		if (m_cost != 9000 && m_cost != 0 && m_isTraversable && !m_isStartNode)
 		{
 			sf::Color colour = m_defaultColour;
 			colour.b -= m_cost * 3;
@@ -62,6 +63,15 @@ public:
 		}
 	}
 	int getCost() { return m_cost; }
+
+	void setIntegrationCost(float t_integrationCost)
+	{
+		m_integrationFieldCost = t_integrationCost;
+	}
+
+	float getIntegrationCost() { return m_integrationFieldCost; }
+
+	sf::Vector2f getPosition() { return m_position; }
 
 	void setMarked(bool t_marked) { m_isMarked = t_marked; }
 	bool getMarked() { return m_isMarked; }

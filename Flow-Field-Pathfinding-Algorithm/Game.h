@@ -11,6 +11,8 @@
 #include <limits>
 #include <stack>
 #include <queue>
+
+#include "FlowFieldGraph.h"
 class Game
 {
 public:
@@ -27,19 +29,11 @@ private:
 	void update(sf::Time t_deltaTime);
 	void render();
 
-	void checkTileMouseClick(bool t_isLeftMouseClick);
-
-	void generateCostsForTiles();
-	void generateTileCostWithNeighbour(int t_row, int t_col);
-	std::array<std::array<Tile*, NUM_ROWS>, NUM_COLS> m_tiles;
-	std::queue<Tile*> tiles;
-
 	sf::RenderWindow m_window;
 	sf::Font m_font;
 
 	bool m_exitGame;
-	Tile* m_goalNode = nullptr;
-	Tile* m_startNode = nullptr;
+	FlowFieldGraph* m_flowFieldGraph;
 };
 
 #endif 
