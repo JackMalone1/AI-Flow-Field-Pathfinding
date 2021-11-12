@@ -10,6 +10,7 @@
 #include <time.h>
 #include <limits>
 #include <stack>
+#include <queue>
 class Game
 {
 public:
@@ -29,9 +30,9 @@ private:
 	void checkTileMouseClick(bool t_isLeftMouseClick);
 
 	void generateCostsForTiles();
-	std::stack<sf::Vector2i> generateTileCostWithNeighbour(int t_row, int t_col);
-	void loopThroughAllTiles(std::stack<sf::Vector2i> t_tiles);
+	void generateTileCostWithNeighbour(int t_row, int t_col);
 	std::array<std::array<Tile*, NUM_ROWS>, NUM_COLS> m_tiles;
+	std::queue<Tile*> tiles;
 
 	sf::RenderWindow m_window;
 	sf::Font m_font;

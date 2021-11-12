@@ -171,52 +171,43 @@ void Game::generateCostsForTiles()
 	m_goalNode->setCost(0);
 	m_goalNode->setMarked(true);
 	sf::Vector2i goalPos = m_goalNode->getRowAndCol();
-	loopThroughAllTiles(generateTileCostWithNeighbour(goalPos.x, goalPos.y));
-}
-
-void Game::loopThroughAllTiles(std::stack<sf::Vector2i> t_tiles)
-{
-	while (!t_tiles.empty())
+	
+	tiles.push(m_goalNode);
+	while (!tiles.empty())
 	{
-		sf::Vector2i tile = t_tiles.top();
-		t_tiles.pop();
-		loopThroughAllTiles(generateTileCostWithNeighbour(tile.x, tile.y));
-		std::cout << "X: " << tile.x << " Y: " << tile.y << "\n";
+		Tile* tile = tiles.front();
+		tiles.pop();
+		generateTileCostWithNeighbour(tile->getRowAndCol().x, tile->getRowAndCol().y);
+	}
+	m_goalNode->setCost(0);
+
+	
+	for (auto& row : m_tiles)
+	{
+		for (auto& tile : row)
+		{
+			if (!tile->isTraversable()) tile->setCost(9000);
+		}
 	}
 }
 
-std::stack<sf::Vector2i> Game::generateTileCostWithNeighbour(int t_row, int t_col)
+void Game::generateTileCostWithNeighbour(int t_row, int t_col)
 {
-	m_tiles.at(t_row).at(t_col)->setMarked(true);
-	if (!m_tiles.at(t_row).at(t_col)->isTraversable()) return std::stack<sf::Vector2i>();
-	//if (!m_tiles.at(t_row).at(t_col)->isTraversable()) return;
-	std::stack<sf::Vector2i> validTiles;
 	for (int direction = 0; direction < 9; direction++)
 	{
 		if (direction == 4) continue;
-
 		int row = t_row + ((direction % 3) - 1);
 		int col = t_col + ((direction / 3) - 1);
-
 		if (row >= 0 && row < NUM_ROWS && col >= 0 && col < NUM_COLS)
-		{
-			
+		{			
 			if (!m_tiles.at(row).at(col)->getMarked())
-			{
-				validTiles.push(sf::Vector2i(row, col));
-				if (m_tiles.at(row).at(col)->isTraversable())
-				{
-					m_tiles.at(row).at(col)->setCost(m_tiles.at(t_row).at(t_col)->getCost() + 1);					
-				}
-				else
-				{
-					m_tiles.at(row).at(col)->setCost(9000);
-				}
+			{				
+				m_tiles.at(row).at(col)->setCost(m_tiles.at(t_row).at(t_col)->getCost() + 1);								
 				m_tiles.at(row).at(col)->setMarked(true);
+				tiles.push(m_tiles.at(row).at(col));
 			}
 		}
 	}
-	return validTiles;
 }
 
 
