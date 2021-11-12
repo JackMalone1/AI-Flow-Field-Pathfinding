@@ -11,23 +11,23 @@ Game::Game() :
 	int x = -15;
 	int id = 0;
 	if (!m_font.loadFromFile("ASSETS//FONTS//ariblk.ttf")) std::cout << "Error loading font" << std::endl;
-	sf::Color colour = sf::Color::Magenta;
-	for (auto& row : m_tiles)
+	sf::Color colour = sf::Color::Blue;
+	for (int row = 0; row < m_tiles.size(); row++)
 	{
 		y += 20;
 		x = -15;
-		for (auto& tile : row)
+		for (int col = 0; col <m_tiles.at(row).size(); col++)
 		{
+			auto& tile = m_tiles.at(row).at(col);
 			x += 20;
-			//colour = colour == sf::Color::Magenta ? sf::Color::Blue : sf::Color::Magenta;
 			int isTraversable = rand() % 100 + 1;
 			if (isTraversable < 5)
 			{
-				tile = new Tile(std::numeric_limits<int>::max(), sf::Vector2f(0.0f, 0.0f), sf::Vector2f(x, y), 20.0f, 20.0f, m_font, colour, false);
+				tile = new Tile(9000, sf::Vector2f(0.0f, 0.0f), sf::Vector2f(x, y), 20.0f, 20.0f, m_font, colour, false, row, col);
 			}
 			else
 			{
-				tile = new Tile(std::numeric_limits<int>::max(), sf::Vector2f(0.0f, 0.0f), sf::Vector2f(x, y), 20.0f, 20.0f, m_font, colour, true);
+				tile = new Tile(9000, sf::Vector2f(0.0f, 0.0f), sf::Vector2f(x, y), 20.0f, 20.0f, m_font, colour, true, row, col);
 			}			
 			id++;
 			tile->setId(id);
@@ -133,18 +133,25 @@ void Game::checkTileMouseClick(bool t_isLeftMouseClick)
 				std::cout << "Intersecting with tile: " << tile->getID() << std::endl;
 				if (t_isLeftMouseClick)
 				{
-					tile->setIsGoalNode(true);
-					tile->setIsStartNode(false);
-					if(m_goalNode) m_goalNode->setIsGoalNode(false);
-					m_goalNode = tile;
-					generateCostsForTiles();
+					if (!tile->isGoalNode() && !tile->isStartNode())
+					{
+						tile->setIsGoalNode(true);
+						tile->setIsStartNode(false);
+						if (m_goalNode) m_goalNode->setIsGoalNode(false);
+						m_goalNode = tile;
+						generateCostsForTiles();
+					}
+					
 				}
 				else
 				{
-					tile->setIsStartNode(true);
-					tile->setIsGoalNode(false);
-					if (m_startNode) m_startNode->setIsStartNode(false);
-					m_startNode = tile;
+					if (!tile->isGoalNode() && !tile->isStartNode())
+					{
+						tile->setIsStartNode(true);
+						tile->setIsGoalNode(false);
+						if (m_startNode) m_startNode->setIsStartNode(false);
+						m_startNode = tile;
+					}
 				}
 			}
 		}
@@ -153,27 +160,37 @@ void Game::checkTileMouseClick(bool t_isLeftMouseClick)
 
 void Game::generateCostsForTiles()
 {
-	m_goalNode->setCost(0);
 	for (auto& row : m_tiles)
 	{
 		for (auto& tile : row)
 		{
 			tile->setMarked(false);
+			tile->setCost(9000);
 		}
 	}
+	m_goalNode->setCost(0);
 	m_goalNode->setMarked(true);
-	for (int row = 0; row < m_tiles.size(); row++)
+	sf::Vector2i goalPos = m_goalNode->getRowAndCol();
+	loopThroughAllTiles(generateTileCostWithNeighbour(goalPos.x, goalPos.y));
+}
+
+void Game::loopThroughAllTiles(std::stack<sf::Vector2i> t_tiles)
+{
+	while (!t_tiles.empty())
 	{
-		for (int col = 0; col < m_tiles.at(0).size(); col++)
-		{
-			generateTileCostWithNeighbour(row, col);
-		}
+		sf::Vector2i tile = t_tiles.top();
+		t_tiles.pop();
+		loopThroughAllTiles(generateTileCostWithNeighbour(tile.x, tile.y));
+		std::cout << "X: " << tile.x << " Y: " << tile.y << "\n";
 	}
 }
 
-void Game::generateTileCostWithNeighbour(int t_row, int t_col)
+std::stack<sf::Vector2i> Game::generateTileCostWithNeighbour(int t_row, int t_col)
 {
 	m_tiles.at(t_row).at(t_col)->setMarked(true);
+	if (!m_tiles.at(t_row).at(t_col)->isTraversable()) return std::stack<sf::Vector2i>();
+	//if (!m_tiles.at(t_row).at(t_col)->isTraversable()) return;
+	std::stack<sf::Vector2i> validTiles;
 	for (int direction = 0; direction < 9; direction++)
 	{
 		if (direction == 4) continue;
@@ -183,19 +200,24 @@ void Game::generateTileCostWithNeighbour(int t_row, int t_col)
 
 		if (row >= 0 && row < NUM_ROWS && col >= 0 && col < NUM_COLS)
 		{
+			
 			if (!m_tiles.at(row).at(col)->getMarked())
 			{
+				validTiles.push(sf::Vector2i(row, col));
 				if (m_tiles.at(row).at(col)->isTraversable())
 				{
-					m_tiles.at(row).at(col)->setCost(m_tiles.at(t_row).at(t_col)->getCost() + 1);
+					m_tiles.at(row).at(col)->setCost(m_tiles.at(t_row).at(t_col)->getCost() + 1);					
 				}
 				else
 				{
-					m_tiles.at(row).at(col)->setCost(std::numeric_limits<int>::max());
+					m_tiles.at(row).at(col)->setCost(9000);
 				}
 				m_tiles.at(row).at(col)->setMarked(true);
 			}
 		}
 	}
+	return validTiles;
 }
+
+
 

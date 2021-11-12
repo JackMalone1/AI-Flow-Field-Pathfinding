@@ -1,17 +1,18 @@
 #include "Tile.h"
 
-Tile::Tile(int t_cost, sf::Font& t_font, bool t_isTraversable)
+Tile::Tile(int t_cost, sf::Font& t_font, bool t_isTraversable, int t_row, int t_col)
 	: m_cost{ t_cost }, m_position{ sf::Vector2f{0.0f,0.0f} }, m_goalVector{ sf::Vector2f{0.0f,0.0f} }, m_font{t_font}, m_isTraversable{t_isTraversable},
-	m_isMarked{true}
+	m_isMarked{true}, m_isStartNode{false}, m_isGoalNode{false}
 {
 	initSprite(sf::Vector2f(20.0f, 20.0f), sf::Color::Red);
 	initText();
 }
 
-Tile::Tile(int t_cost, sf::Vector2f t_goalVector, sf::Vector2f t_position, int t_width, int t_height, sf::Font& t_font, sf::Color t_colour, bool t_isTraversable)
+Tile::Tile(int t_cost, sf::Vector2f t_goalVector, sf::Vector2f t_position, int t_width, int t_height, sf::Font& t_font, sf::Color t_colour, bool t_isTraversable, int t_row, int t_col)
 	: m_cost{ t_cost }, m_goalVector{t_goalVector},
 	m_position{ t_position }, m_font{t_font},
-	m_isTraversable{t_isTraversable}, m_isMarked{true}
+	m_isTraversable{t_isTraversable}, m_isMarked{true}, m_isStartNode{ false }, m_isGoalNode{ false },
+	m_row{t_row}, m_col{t_col}
 {
 	initSprite(sf::Vector2f(t_width, t_height), t_colour);
 	initText();
@@ -52,5 +53,6 @@ void Tile::initText()
 	m_displayCost.setFillColor(sf::Color::White);
 	m_displayCost.setCharacterSize(6);
 	m_displayCost.setPosition(m_shape.getPosition());
-	m_displayCost.setString(std::to_string(m_cost));
+	if (m_cost < 9000) m_displayCost.setString(std::to_string(m_cost));
+	else m_displayCost.setString("Max");
 }

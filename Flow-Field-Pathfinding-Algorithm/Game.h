@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <limits>
+#include <stack>
 class Game
 {
 public:
@@ -28,8 +29,8 @@ private:
 	void checkTileMouseClick(bool t_isLeftMouseClick);
 
 	void generateCostsForTiles();
-	void generateTileCostWithNeighbour(int t_row, int t_col);
-
+	std::stack<sf::Vector2i> generateTileCostWithNeighbour(int t_row, int t_col);
+	void loopThroughAllTiles(std::stack<sf::Vector2i> t_tiles);
 	std::array<std::array<Tile*, NUM_ROWS>, NUM_COLS> m_tiles;
 
 	sf::RenderWindow m_window;

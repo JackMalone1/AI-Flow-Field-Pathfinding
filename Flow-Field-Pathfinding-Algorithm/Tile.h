@@ -13,14 +13,15 @@ private:
 	sf::Font& m_font;
 	sf::RectangleShape m_shape;
 	int m_id;
+	int m_row, m_col;
 	bool m_isTraversable;
 	bool m_isGoalNode;
 	bool m_isStartNode;
 	sf::Color m_defaultColour;
 	bool m_isMarked;
 public:
-	Tile(int t_cost, sf::Font& t_font, bool t_isTraversable);
-	Tile(int t_cost, sf::Vector2f t_goalVector, sf::Vector2f t_position, int t_width, int t_height, sf::Font& t_font, sf::Color t_colour, bool t_isTraversable);
+	Tile(int t_cost, sf::Font& t_font, bool t_isTraversable, int t_row, int t_col);
+	Tile(int t_cost, sf::Vector2f t_goalVector, sf::Vector2f t_position, int t_width, int t_height, sf::Font& t_font, sf::Color t_colour, bool t_isTraversable, int t_row, int t_col);
 	void setId(int t_id)
 	{
 		m_id = t_id;
@@ -46,13 +47,20 @@ public:
 
 	bool intersectsPoint(sf::Vector2f t_point);
 
-	void setCost(int t_cost) { m_cost = t_cost; }
+	void setCost(int t_cost)
+	{
+		m_cost = t_cost;
+		if (m_cost < 9000) m_displayCost.setString(std::to_string(m_cost));
+		else m_displayCost.setString("Max");
+	}
 	int getCost() { return m_cost; }
 
 	void setMarked(bool t_marked) { m_isMarked = t_marked; }
 	bool getMarked() { return m_isMarked; }
 
 	bool isTraversable() { return m_isTraversable; }
+
+	sf::Vector2i getRowAndCol() { return sf::Vector2i(m_row, m_col); }
 private:
 	virtual void draw(sf::RenderTarget& t_target, sf::RenderStates t_states) const;
 	void initSprite(sf::Vector2f t_dimensions, sf::Color t_colour);
