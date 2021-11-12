@@ -26,7 +26,7 @@ bool Tile::intersectsPoint(sf::Vector2f t_point)
 void Tile::draw(sf::RenderTarget& t_target, sf::RenderStates t_states) const
 {
 	t_target.draw(m_shape, t_states);
-	t_target.draw(m_displayCost, t_states);
+	if(m_shouldDisplayCost) t_target.draw(m_displayCost, t_states);
 }
 
 void Tile::initSprite(sf::Vector2f t_dimensions, sf::Color t_colour)
@@ -51,8 +51,8 @@ void Tile::initText()
 {
 	m_displayCost.setFont(m_font);
 	m_displayCost.setFillColor(sf::Color::White);
-	m_displayCost.setCharacterSize(6);
-	m_displayCost.setPosition(m_shape.getPosition());
+	m_displayCost.setCharacterSize(8);
+	m_displayCost.setPosition(m_shape.getPosition() - sf::Vector2f(7.5f, 7.5f));
 	if (m_cost < 9000) m_displayCost.setString(std::to_string(m_cost));
 	else m_displayCost.setString("Max");
 }

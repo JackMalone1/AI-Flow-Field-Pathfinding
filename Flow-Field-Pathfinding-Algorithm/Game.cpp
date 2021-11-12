@@ -7,15 +7,15 @@ Game::Game() :
 	m_exitGame{ false }
 {
 	srand(time(NULL));
-	int y = -15;
-	int x = -15;
+	int y = -10;
+	int x = -10;
 	int id = 0;
 	if (!m_font.loadFromFile("ASSETS//FONTS//ariblk.ttf")) std::cout << "Error loading font" << std::endl;
 	sf::Color colour = sf::Color::Blue;
 	for (int row = 0; row < m_tiles.size(); row++)
 	{
 		y += 20;
-		x = -15;
+		x = -10;
 		for (int col = 0; col <m_tiles.at(row).size(); col++)
 		{
 			auto& tile = m_tiles.at(row).at(col);
@@ -85,6 +85,17 @@ void Game::processKeys(sf::Event t_event)
 		m_exitGame = true;
 	}
 
+	if (sf::Keyboard::C == t_event.key.code)
+	{
+		for (auto& row : m_tiles)
+		{
+			for (auto& tile : row)
+			{
+				tile->setShouldDisplayCost(!tile->shouldDisplayCost());
+			}
+		}
+	}
+
 	if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
 	{
 		std::cout << "user pressed left mouse button.\n";
@@ -128,7 +139,7 @@ void Game::checkTileMouseClick(bool t_isLeftMouseClick)
 	{
 		for (auto& tile : row)
 		{
-			if (tile->intersectsPoint(mousePosition))
+			if (tile->intersectsPoint(mousePosition) && tile->isTraversable())
 			{
 				std::cout << "Intersecting with tile: " << tile->getID() << std::endl;
 				if (t_isLeftMouseClick)
