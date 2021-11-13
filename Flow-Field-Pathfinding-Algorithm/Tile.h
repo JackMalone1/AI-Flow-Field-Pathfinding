@@ -6,7 +6,8 @@
 class Tile : public sf::Drawable
 {
 private:
-	sf::Vector2f m_goalVector;
+	sf::Vector2f* m_goalVector;
+	sf::VertexArray m_vectorToGoal{ sf::Lines, 2 };
 	sf::Vector2f m_position;
 	int m_cost;
 	float m_integrationFieldCost;
@@ -23,7 +24,7 @@ private:
 	bool m_shouldDisplayCost = true;
 public:
 	Tile(int t_cost, sf::Font& t_font, bool t_isTraversable, int t_row, int t_col);
-	Tile(int t_cost, sf::Vector2f t_goalVector, sf::Vector2f t_position, int t_width, int t_height, sf::Font& t_font, sf::Color t_colour, bool t_isTraversable, int t_row, int t_col);
+	Tile(int t_cost, sf::Vector2f* t_goalVector, sf::Vector2f t_position, int t_width, int t_height, sf::Font& t_font, sf::Color t_colour, bool t_isTraversable, int t_row, int t_col);
 	void setId(int t_id)
 	{
 		m_id = t_id;
@@ -84,6 +85,32 @@ public:
 	void setShouldDisplayCost(bool t_shouldDisplayCost)
 	{
 		m_shouldDisplayCost = t_shouldDisplayCost;
+	}
+
+	sf::Vector2f getVectorField() { return *m_goalVector; }
+	void setVectorField(sf::Vector2f* t_vectorField)
+	{
+		m_goalVector = t_vectorField;
+		if (m_goalVector && !m_isGoalNode)
+		{
+			m_vectorToGoal.clear();
+			m_vectorToGoal.append(sf::Vertex(m_position, sf::Color::Black));
+			m_vectorToGoal.append(sf::Vertex(*m_goalVector, sf::Color::Black));
+		}
+		else
+		{
+			m_vectorToGoal.clear();
+		}
+	}
+
+	void setColour(sf::Color colour)
+	{
+		if(!m_isGoalNode && !m_isStartNode && m_isTraversable) m_shape.setFillColor(colour);
+	}
+
+	sf::Color getDefaultColour()
+	{
+		return m_defaultColour;
 	}
 private:
 	virtual void draw(sf::RenderTarget& t_target, sf::RenderStates t_states) const;

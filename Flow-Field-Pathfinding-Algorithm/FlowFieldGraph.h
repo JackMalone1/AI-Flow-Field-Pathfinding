@@ -33,6 +33,9 @@ private:
 	void generateCostsForTiles();
 	void generateTileCostWithNeighbour(int t_row, int t_col);
 	void generateTileIntegrationCostWithNeighbour(int t_row, int t_col);
+	void generateVectorFieldWithNeighbour(int t_row, int t_col);
+	void generatePathTowardsGoal();
+	void generatePathTowardsGoalWithNeighbour(int t_row, int t_col);
 	void handleMouseClick(Tile*& tile, bool t_isLeftClick);
 };
 

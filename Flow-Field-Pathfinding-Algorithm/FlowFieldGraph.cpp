@@ -31,11 +31,11 @@ FlowFieldGraph::FlowFieldGraph(sf::Font& t_font, sf::RenderWindow& t_window) : m
 			int isTraversable = rand() % 100 + 1;
 			if (isTraversable < 5)
 			{
-				tile = new Tile(9000, sf::Vector2f(0.0f, 0.0f), sf::Vector2f(x, y), 20.0f, 20.0f, m_font, colour, false, row, col);
+				tile = new Tile(9000, new sf::Vector2f(0.0f, 0.0f), sf::Vector2f(x, y), 20.0f, 20.0f, m_font, colour, false, row, col);
 			}
 			else
 			{
-				tile = new Tile(9000, sf::Vector2f(0.0f, 0.0f), sf::Vector2f(x, y), 20.0f, 20.0f, m_font, colour, true, row, col);
+				tile = new Tile(9000, new sf::Vector2f(0.0f, 0.0f), sf::Vector2f(x, y), 20.0f, 20.0f, m_font, colour, true, row, col);
 			}
 			id++;
 			tile->setId(id);
@@ -147,8 +147,113 @@ void FlowFieldGraph::generateIntegrationField()
 	}
 }
 
+void FlowFieldGraph::generateVectorFieldWithNeighbour(int t_row, int t_col)
+{
+	Tile& tile = *m_tiles.at(t_row).at(t_col);
+	if (tile.getMarked()) return;
+	float lowestIntegrationCost = std::numeric_limits<float>::max();
+	sf::Vector2f positionOfTile = tile.getPosition();
+	for (int direction = 0; direction < 9; direction++)
+	{
+		if (direction == 4) continue;
+		int row = t_row + ((direction % 3) - 1);
+		int col = t_col + ((direction / 3) - 1);
+
+		if (row >= 0 && row < NUM_ROWS && col >= 0 && col < NUM_COLS)
+		{
+			float integrationCost = m_tiles.at(row).at(col)->getIntegrationCost();
+			if (integrationCost < lowestIntegrationCost)
+			{
+				lowestIntegrationCost = integrationCost;
+				positionOfTile = m_tiles.at(row).at(col)->getPosition();
+			}
+		}
+	}
+	
+	tile.setMarked(true);
+	tile.setVectorField(new sf::Vector2f(positionOfTile + tile.getPosition()));
+}
+
 void FlowFieldGraph::generateVectorField()
 {
+	for (auto& row : m_tiles)
+	{
+		for (auto& tile : row)
+		{
+			tile->setMarked(false);
+		}
+	}
+	m_goalNode->setVectorField(new sf::Vector2f(0.0f, 0.0f));
+	m_goalNode->setMarked(true);
+	sf::Vector2i goalPos = m_goalNode->getRowAndCol();
+
+	for (auto& row : m_tiles)
+	{
+		for (auto& tile : row)
+		{
+			generateVectorFieldWithNeighbour(tile->getRowAndCol().x, tile->getRowAndCol().y);
+		}
+	}
+
+	m_goalNode->setVectorField(new sf::Vector2f(0.0f, 0.0f));
+
+	for (auto& row : m_tiles)
+	{
+		for (auto& tile : row)
+		{
+			if (!tile->isTraversable()) tile->setVectorField(nullptr);
+		}
+	}
+}
+
+void FlowFieldGraph::generatePathTowardsGoal()
+{
+	for (auto& row : m_tiles)
+	{
+		for (auto& tile : row)
+		{
+			tile->setColour(tile->getDefaultColour());
+		}
+	}
+
+	tiles.push(m_startNode);
+	while (!tiles.empty())
+	{
+		Tile* tile = tiles.front();
+		tiles.pop();
+		if (tile->isGoalNode())
+		{
+			std::queue<Tile*> empty;
+			tiles.swap(empty);
+			return;
+		}
+		generatePathTowardsGoalWithNeighbour(tile->getRowAndCol().x, tile->getRowAndCol().y);
+	}
+}
+
+void FlowFieldGraph::generatePathTowardsGoalWithNeighbour(int t_row, int t_col)
+{
+	Tile& tile = *m_tiles.at(t_row).at(t_col);
+	float lowestIntegrationCost = std::numeric_limits<float>::max();
+	sf::Vector2i rowAndCol = tile.getRowAndCol();
+	for (int direction = 0; direction < 9; direction++)
+	{
+		if (direction == 4) continue;
+		int row = t_row + ((direction % 3) - 1);
+		int col = t_col + ((direction / 3) - 1);
+
+		if (row >= 0 && row < NUM_ROWS && col >= 0 && col < NUM_COLS)
+		{
+			float integrationCost = m_tiles.at(row).at(col)->getIntegrationCost();
+			if (integrationCost < lowestIntegrationCost)
+			{
+				lowestIntegrationCost = integrationCost;
+				rowAndCol = m_tiles.at(row).at(col)->getRowAndCol();
+			}
+		}
+	}
+	tiles.push(m_tiles.at(rowAndCol.x).at(rowAndCol.y));
+	m_tiles.at(rowAndCol.x).at(rowAndCol.y)->setColour(sf::Color::Yellow);
 }
 
 
@@ -189,6 +294,7 @@ void FlowFieldGraph::handleMouseClick(Tile*& tile, bool t_isLeftClick)
 			generateCostsForTiles();
 			generateIntegrationField();
 			generateVectorField();
+			
 		}
 
 	}
@@ -202,4 +308,5 @@ void FlowFieldGraph::handleMouseClick(Tile*& tile, bool t_isLeftClick)
 			m_startNode = tile;
 		}
 	}
+	if (m_goalNode && m_startNode) generatePathTowardsGoal();
 }
