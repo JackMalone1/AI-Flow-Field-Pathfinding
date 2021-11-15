@@ -103,9 +103,15 @@ public:
 		}
 	}
 
-	void setColour(sf::Color colour)
+	void setColour(sf::Color colour, bool t_noLighting)
 	{
 		if(!m_isGoalNode && !m_isStartNode && m_isTraversable) m_shape.setFillColor(colour);
+		if (m_cost != 9000 && m_cost != 0 && m_isTraversable && !m_isStartNode && !t_noLighting)
+		{
+			sf::Color colour = m_defaultColour;
+			colour.b -= m_cost * 3;
+			m_shape.setFillColor(colour);
+		}
 	}
 
 	sf::Color getDefaultColour()

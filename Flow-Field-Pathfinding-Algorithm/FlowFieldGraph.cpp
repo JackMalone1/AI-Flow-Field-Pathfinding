@@ -212,7 +212,7 @@ void FlowFieldGraph::generatePathTowardsGoal()
 	{
 		for (auto& tile : row)
 		{
-			tile->setColour(tile->getDefaultColour());
+			tile->setColour(tile->getDefaultColour(), false);
 		}
 	}
 
@@ -253,7 +253,7 @@ void FlowFieldGraph::generatePathTowardsGoalWithNeighbour(int t_row, int t_col)
 		}
 	}
 	tiles.push(m_tiles.at(rowAndCol.x).at(rowAndCol.y));
-	m_tiles.at(rowAndCol.x).at(rowAndCol.y)->setColour(sf::Color::Yellow);
+	m_tiles.at(rowAndCol.x).at(rowAndCol.y)->setColour(sf::Color::Yellow, true);
 }
 
 
