@@ -9,6 +9,7 @@ void FlowFieldGraph::checkTileMouseClick(bool t_isLeftMouseClick, sf::Vector2i t
 			if (tile->intersectsPoint(static_cast<sf::Vector2f>(t_mousePosition)) && tile->isTraversable())
 			{
 				handleMouseClick(tile, t_isLeftMouseClick);
+				return;//no need to continue check if you clicked on a point after finding a tile that you clicked on
 			}
 		}
 	}
@@ -28,15 +29,7 @@ FlowFieldGraph::FlowFieldGraph(sf::Font& t_font, sf::RenderWindow& t_window) : m
 		{
 			auto& tile = m_tiles.at(row).at(col);
 			x += 20;
-			int isTraversable = rand() % 100 + 1;
-			if (isTraversable < 5)
-			{
-				tile = new Tile(9000, new sf::Vector2f(0.0f, 0.0f), sf::Vector2f(x, y), 20.0f, 20.0f, m_font, colour, false, row, col);
-			}
-			else
-			{
-				tile = new Tile(9000, new sf::Vector2f(0.0f, 0.0f), sf::Vector2f(x, y), 20.0f, 20.0f, m_font, colour, true, row, col);
-			}
+			tile = new Tile(900000, new sf::Vector2f(0.0f, 0.0f), sf::Vector2f(x, y), 20.0f, 20.0f, m_font, colour, true, row, col);
 			id++;
 			tile->setId(id);
 		}
@@ -50,7 +43,14 @@ void FlowFieldGraph::generateCostsForTiles()
 		for (auto& tile : row)
 		{
 			tile->setMarked(false);
-			tile->setCost(9000);
+			if (tile->isTraversable())
+			{
+				tile->setCost(1);
+			}
+			else
+			{
+				tile->setCost(std::numeric_limits<float>::max());
+			}
 		}
 	}
 	m_goalNode->setCost(0);
@@ -65,15 +65,6 @@ void FlowFieldGraph::generateCostsForTiles()
 		generateTileCostWithNeighbour(tile->getRowAndCol().x, tile->getRowAndCol().y);
 	}
 	m_goalNode->setCost(0);
-
-
-	for (auto& row : m_tiles)
-	{
-		for (auto& tile : row)
-		{
-			if (!tile->isTraversable()) tile->setCost(9000);
-		}
-	}
 }
 
 void FlowFieldGraph::generateTileCostWithNeighbour(int t_row, int t_col)
@@ -107,8 +98,12 @@ void FlowFieldGraph::generateTileIntegrationCostWithNeighbour(int t_row, int t_c
 			Tile* tile = m_tiles.at(row).at(col);
 			if (!tile->getMarked())
 			{
-				tile->setIntegrationCost(tile->getCost() +
-					Utils::DistanceBetweenPositions(m_goalNode->getPosition(), tile->getPosition()));
+				tile->setIntegrationCost((tile->getCost()) +
+					Utils::DistanceBetweenPositions(m_goalNode->getPosition(), tile->getPosition()) * 1000);
+				if (!tile->isTraversable())
+				{
+					tile->setIntegrationCost(std::numeric_limits<float>::max());
+				}
 				tile->setMarked(true);
 				tiles.push(tile);
 			}
@@ -137,14 +132,6 @@ void FlowFieldGraph::generateIntegrationField()
 		generateTileIntegrationCostWithNeighbour(tile->getRowAndCol().x, tile->getRowAndCol().y);
 	}
 	m_goalNode->setIntegrationCost(0);
-
-	for (auto& row : m_tiles)
-	{
-		for (auto& tile : row)
-		{
-			if (!tile->isTraversable()) tile->setIntegrationCost(9000);
-		}
-	}
 }
 
 void FlowFieldGraph::generateVectorFieldWithNeighbour(int t_row, int t_col)
@@ -196,28 +183,14 @@ void FlowFieldGraph::generateVectorField()
 	}
 
 	m_goalNode->setVectorField(new sf::Vector2f(0.0f, 0.0f));
-
-	for (auto& row : m_tiles)
-	{
-		for (auto& tile : row)
-		{
-			if (!tile->isTraversable()) tile->setVectorField(nullptr);
-		}
-	}
 }
 
 void FlowFieldGraph::generatePathTowardsGoal()
 {
-	for (auto& row : m_tiles)
-	{
-		for (auto& tile : row)
-		{
-			tile->setColour(tile->getDefaultColour(), false);
-		}
-	}
-
+	int tilesChecked = 0;
 	tiles.push(m_startNode);
-	while (!tiles.empty())
+	bool reachedGoalNode = false;
+	while (!tiles.empty() && tilesChecked < 25000)
 	{
 		Tile* tile = tiles.front();
 		tiles.pop();
@@ -225,9 +198,23 @@ void FlowFieldGraph::generatePathTowardsGoal()
 		{
 			std::queue<Tile*> empty;
 			tiles.swap(empty);
+			reachedGoalNode = true;
 			return;
 		}
 		generatePathTowardsGoalWithNeighbour(tile->getRowAndCol().x, tile->getRowAndCol().y);
+		tilesChecked++;
+		if (tilesChecked == 25000) std::cout << "Limit Reached" << std::endl;
+	}
+	if (!reachedGoalNode)
+	{
+		std::cout << "no valid path found to goal so not displaying path \n";
+		for (auto& row : m_tiles)
+		{
+			for (auto& tile : row)
+			{
+				tile->updateDisplayColour();
+			}
+		}
 	}
 }
 
@@ -241,19 +228,18 @@ void FlowFieldGraph::generatePathTowardsGoalWithNeighbour(int t_row, int t_col)
 		if (direction == 4) continue;
 		int row = t_row + ((direction % 3) - 1);
 		int col = t_col + ((direction / 3) - 1);
-
 		if (row >= 0 && row < NUM_ROWS && col >= 0 && col < NUM_COLS)
 		{
 			float integrationCost = m_tiles.at(row).at(col)->getIntegrationCost();
-			if (integrationCost < lowestIntegrationCost)
+			if (integrationCost < lowestIntegrationCost && m_tiles.at(row).at(col)->isTraversable() && !m_tiles.at(row).at(col)->isStartNode() && !m_tiles.at(row).at(col)->isAlreadyOnPath())
 			{
 				lowestIntegrationCost = integrationCost;
-				rowAndCol = m_tiles.at(row).at(col)->getRowAndCol();
+				rowAndCol = sf::Vector2i(row, col);
 			}
 		}
 	}
 	tiles.push(m_tiles.at(rowAndCol.x).at(rowAndCol.y));
-	m_tiles.at(rowAndCol.x).at(rowAndCol.y)->setColour(sf::Color::Yellow, true);
+	m_tiles.at(rowAndCol.x).at(rowAndCol.y)->setColour(sf::Color::Yellow);
 }
 
 
@@ -293,10 +279,8 @@ void FlowFieldGraph::handleMouseClick(Tile*& tile, bool t_isLeftClick)
 			m_goalNode = tile;
 			generateCostsForTiles();
 			generateIntegrationField();
-			generateVectorField();
-			
+			generateVectorField();			
 		}
-
 	}
 	else
 	{
@@ -306,7 +290,38 @@ void FlowFieldGraph::handleMouseClick(Tile*& tile, bool t_isLeftClick)
 			tile->setIsGoalNode(false);
 			if (m_startNode) m_startNode->setIsStartNode(false);
 			m_startNode = tile;
+			if (m_goalNode)
+			{
+				generateCostsForTiles();
+				generateIntegrationField();
+				generateVectorField();
+			}
 		}
 	}
 	if (m_goalNode && m_startNode) generatePathTowardsGoal();
+}
+
+void FlowFieldGraph::placeObstructedTIle(sf::Vector2f t_mousePosition)
+{
+	for (auto& row : m_tiles)
+	{
+		for (auto& tile : row)
+		{
+			if (tile->intersectsPoint(t_mousePosition) && !tile->isGoalNode() && !tile->isStartNode())
+			{		
+				tile->setTraversable(!tile->isTraversable());
+				if (m_goalNode)
+				{
+					generateCostsForTiles();
+					generateIntegrationField();
+					generateVectorField();
+					if (m_startNode)
+					{
+						generatePathTowardsGoal();
+					}				
+				}
+				return;
+			}
+		}
+	}	
 }

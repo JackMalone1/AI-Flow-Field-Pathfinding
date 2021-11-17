@@ -27,6 +27,7 @@ public:
 	FlowFieldGraph(sf::Font& t_font, sf::RenderWindow& t_window);
 	void render();
 	void updateTilesCostDisplay();
+	void placeObstructedTIle(sf::Vector2f t_mousePosition);
 private:
 	void generateIntegrationField();
 	void generateVectorField();
@@ -37,5 +38,6 @@ private:
 	void generatePathTowardsGoal();
 	void generatePathTowardsGoalWithNeighbour(int t_row, int t_col);
 	void handleMouseClick(Tile*& tile, bool t_isLeftClick);
+	
 };
 

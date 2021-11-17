@@ -64,7 +64,7 @@ void Game::processKeys(sf::Event t_event)
 		m_exitGame = true;
 	}
 
-	if (sf::Keyboard::C == t_event.key.code)
+	if (sf::Keyboard::Z == t_event.key.code)
 	{
 		m_flowFieldGraph->updateTilesCostDisplay();
 	}
@@ -79,6 +79,11 @@ void Game::processKeys(sf::Event t_event)
 	{
 		std::cout << "user pressed right mouse button.\n";
 		m_flowFieldGraph->checkTileMouseClick(false, sf::Mouse::getPosition(m_window));
+	}
+
+	if (sf::Mouse::isButtonPressed(sf::Mouse::Middle))
+	{
+		m_flowFieldGraph->placeObstructedTIle(static_cast<sf::Vector2f>(sf::Mouse::getPosition(m_window)));
 	}
 }
 

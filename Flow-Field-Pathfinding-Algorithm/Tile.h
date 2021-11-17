@@ -53,17 +53,24 @@ public:
 	void setCost(int t_cost)
 	{
 		m_cost = t_cost;
-		if (m_cost < 9000) m_displayCost.setString(std::to_string(m_cost));
+		if (isTraversable()) m_displayCost.setString(std::to_string(m_cost));
 		else m_displayCost.setString("Max");
-
-		if (m_cost != 9000 && m_cost != 0 && m_isTraversable && !m_isStartNode)
+		updateDisplayColour();		
+	}
+	int getCost() { return m_cost; }
+	void updateDisplayColour()
+	{
+		if (!m_isGoalNode && m_isTraversable && !m_isStartNode)
 		{
 			sf::Color colour = m_defaultColour;
 			colour.b -= m_cost * 3;
 			m_shape.setFillColor(colour);
 		}
+		else if (m_isGoalNode)
+		{
+			m_shape.setFillColor(sf::Color::Red);
+		}
 	}
-	int getCost() { return m_cost; }
 
 	void setIntegrationCost(float t_integrationCost)
 	{
@@ -78,6 +85,18 @@ public:
 	bool getMarked() { return m_isMarked; }
 
 	bool isTraversable() { return m_isTraversable; }
+	void setTraversable(bool t_isTraversable)
+	{
+		m_isTraversable = t_isTraversable;
+		if (m_isTraversable && !m_isStartNode && !m_isGoalNode)
+		{
+			m_shape.setFillColor(m_defaultColour);
+		}
+		else if(!m_isTraversable)
+		{
+			m_shape.setFillColor(sf::Color::Black);
+		}
+	}
 
 	sf::Vector2i getRowAndCol() { return sf::Vector2i(m_row, m_col); }
 
@@ -103,20 +122,19 @@ public:
 		}
 	}
 
-	void setColour(sf::Color colour, bool t_noLighting)
+	void setColour(sf::Color colour)
 	{
-		if(!m_isGoalNode && !m_isStartNode && m_isTraversable) m_shape.setFillColor(colour);
-		if (m_cost != 9000 && m_cost != 0 && m_isTraversable && !m_isStartNode && !t_noLighting)
-		{
-			sf::Color colour = m_defaultColour;
-			colour.b -= m_cost * 3;
-			m_shape.setFillColor(colour);
-		}
+		if(!m_isGoalNode && !m_isStartNode) m_shape.setFillColor(colour);
 	}
 
 	sf::Color getDefaultColour()
 	{
 		return m_defaultColour;
+	}
+
+	bool isAlreadyOnPath() 
+	{
+		return m_shape.getFillColor() == sf::Color::Yellow;
 	}
 private:
 	virtual void draw(sf::RenderTarget& t_target, sf::RenderStates t_states) const;
