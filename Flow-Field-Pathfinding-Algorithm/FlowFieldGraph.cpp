@@ -280,6 +280,7 @@ void FlowFieldGraph::handleMouseClick(Tile*& tile, bool t_isLeftClick)
 			generateCostsForTiles();
 			generateIntegrationField();
 			generateVectorField();			
+			if (m_goalNode && m_startNode) generatePathTowardsGoal();
 		}
 	}
 	else
@@ -295,10 +296,11 @@ void FlowFieldGraph::handleMouseClick(Tile*& tile, bool t_isLeftClick)
 				generateCostsForTiles();
 				generateIntegrationField();
 				generateVectorField();
+				if (m_goalNode && m_startNode) generatePathTowardsGoal();
 			}
 		}
 	}
-	if (m_goalNode && m_startNode) generatePathTowardsGoal();
+	
 }
 
 void FlowFieldGraph::placeObstructedTIle(sf::Vector2f t_mousePosition)
