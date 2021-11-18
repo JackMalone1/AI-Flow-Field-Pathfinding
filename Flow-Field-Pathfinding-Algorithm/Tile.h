@@ -63,6 +63,7 @@ public:
 		{
 			sf::Color colour = m_defaultColour;
 			colour.b -= m_cost * 3;
+			colour.a += m_cost * 1.5;
 			m_shape.setFillColor(colour);
 		}
 		else if (m_isGoalNode)

@@ -3,7 +3,7 @@
 
 
 Game::Game() :
-	m_window{ sf::VideoMode{ 1000U, 1000U, 32U }, "SFML Game" },
+	m_window{ sf::VideoMode{ 1000U, 1000U, 32U }, "SFML Game", sf::Style::Titlebar | sf::Style::Close},
 	m_exitGame{ false }
 {
 	srand(time(NULL));
