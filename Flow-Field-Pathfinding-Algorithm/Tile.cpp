@@ -1,18 +1,10 @@
 #include "Tile.h"
 
-Tile::Tile(int t_cost, sf::Font& t_font, bool t_isTraversable, int t_row, int t_col)
-	: m_cost{ t_cost }, m_position{ sf::Vector2f{0.0f,0.0f} }, m_goalVector{ new sf::Vector2f{0.0f,0.0f} }, m_font{t_font}, m_isTraversable{t_isTraversable},
-	m_isMarked{true}, m_isStartNode{false}, m_isGoalNode{false}
-{
-	initSprite(sf::Vector2f(20.0f, 20.0f), sf::Color::Red);
-	initText();
-}
-
 Tile::Tile(int t_cost, sf::Vector2f* t_goalVector, sf::Vector2f t_position,
-	int t_width, int t_height, sf::Font& t_font, sf::Color t_colour, bool t_isTraversable, int t_row, int t_col)
+	int t_width, int t_height, sf::Font& t_font, sf::Color t_colour, int t_row, int t_col)
 	: m_cost{ t_cost }, m_goalVector{t_goalVector},
 	m_position{ t_position }, m_font{t_font},
-	m_isTraversable{t_isTraversable}, m_isMarked{true}, m_isStartNode{ false }, m_isGoalNode{ false },
+	m_isTraversable{true}, m_isMarked{true}, m_isStartNode{ false }, m_isGoalNode{ false },
 	m_row{t_row}, m_col{t_col}
 {
 	initSprite(sf::Vector2f(t_width, t_height), t_colour);
@@ -37,14 +29,7 @@ void Tile::initSprite(sf::Vector2f t_dimensions, sf::Color t_colour)
 	m_shape.setPosition(m_position);
 	m_shape.setSize(t_dimensions);
 	m_shape.setOrigin(m_shape.getGlobalBounds().width / 2.0f, m_shape.getGlobalBounds().height / 2.0f);
-	if (m_isTraversable)
-	{
-		m_shape.setFillColor(m_defaultColour);
-	}
-	else
-	{
-		m_shape.setFillColor(sf::Color::Black);
-	}
+	m_shape.setFillColor(m_defaultColour);
 	m_shape.setOutlineColor(sf::Color::Green);
 	m_shape.setOutlineThickness(1.0f);
 }

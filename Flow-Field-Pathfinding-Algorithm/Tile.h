@@ -23,8 +23,7 @@ private:
 	bool m_isMarked;
 	bool m_shouldDisplayCost = true;
 public:
-	Tile(int t_cost, sf::Font& t_font, bool t_isTraversable, int t_row, int t_col);
-	Tile(int t_cost, sf::Vector2f* t_goalVector, sf::Vector2f t_position, int t_width, int t_height, sf::Font& t_font, sf::Color t_colour, bool t_isTraversable, int t_row, int t_col);
+	Tile(int t_cost, sf::Vector2f* t_goalVector, sf::Vector2f t_position, int t_width, int t_height, sf::Font& t_font, sf::Color t_colour, int t_row, int t_col);
 	void setId(int t_id)
 	{
 		m_id = t_id;

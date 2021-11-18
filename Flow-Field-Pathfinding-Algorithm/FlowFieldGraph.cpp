@@ -20,7 +20,7 @@ FlowFieldGraph::FlowFieldGraph(sf::Font& t_font, sf::RenderWindow& t_window) : m
 	int y = -10;
 	int x = -10;
 	int id = 0;
-	sf::Color colour = sf::Color::Blue;
+	sf::Color colour = sf::Color(0,0,255,125);
 	for (int row = 0; row < m_tiles.size(); row++)
 	{
 		y += 20;
@@ -29,7 +29,7 @@ FlowFieldGraph::FlowFieldGraph(sf::Font& t_font, sf::RenderWindow& t_window) : m
 		{
 			auto& tile = m_tiles.at(row).at(col);
 			x += 20;
-			tile = new Tile(900000, new sf::Vector2f(0.0f, 0.0f), sf::Vector2f(x, y), 20.0f, 20.0f, m_font, colour, true, row, col);
+			tile = new Tile(900000, new sf::Vector2f(0.0f, 0.0f), sf::Vector2f(x, y), 20.0f, 20.0f, m_font, colour, row, col);
 			id++;
 			tile->setId(id);
 		}
@@ -158,7 +158,7 @@ void FlowFieldGraph::generateVectorFieldWithNeighbour(int t_row, int t_col)
 	}
 	
 	tile.setMarked(true);
-	tile.setVectorField(new sf::Vector2f(positionOfTile + tile.getPosition()));
+	tile.setVectorField(new sf::Vector2f(positionOfTile));
 }
 
 void FlowFieldGraph::generateVectorField()
