@@ -17,14 +17,14 @@ void FlowFieldGraph::checkTileMouseClick(bool t_isLeftMouseClick, sf::Vector2i t
 
 FlowFieldGraph::FlowFieldGraph(sf::Font& t_font, sf::RenderWindow& t_window) : m_renderWindow{ t_window }, m_font{t_font}
 {
-	int y = -10;
-	int x = -10;
+	int y = 2.5;
+	int x = 15;
 	int id = 0;
 	sf::Color colour = sf::Color(0,0,255,125);
 	for (int row = 0; row < m_tiles.size(); row++)
 	{
 		y += 20;
-		x = -10;
+		x = 15;
 		for (int col = 0; col < m_tiles.at(row).size(); col++)
 		{
 			auto& tile = m_tiles.at(row).at(col);
@@ -261,6 +261,17 @@ void FlowFieldGraph::updateTilesCostDisplay()
 		for (auto& tile : row)
 		{
 			tile->setShouldDisplayCost(!tile->shouldDisplayCost());
+		}
+	}
+}
+
+void FlowFieldGraph::updateVectorFieldDisplay()
+{
+	for (auto& row : m_tiles)
+	{
+		for (auto& tile : row)
+		{
+			tile->setDisplayVectorField(!tile->shouldDisplayVectorField());
 		}
 	}
 }

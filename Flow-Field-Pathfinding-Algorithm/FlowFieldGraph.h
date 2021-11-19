@@ -27,6 +27,7 @@ public:
 	FlowFieldGraph(sf::Font& t_font, sf::RenderWindow& t_window);
 	void render();
 	void updateTilesCostDisplay();
+	void updateVectorFieldDisplay();
 	void placeObstructedTIle(sf::Vector2f t_mousePosition);
 private:
 	void generateIntegrationField();

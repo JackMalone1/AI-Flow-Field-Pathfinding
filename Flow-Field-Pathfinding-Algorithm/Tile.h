@@ -22,6 +22,7 @@ private:
 	sf::Color m_defaultColour;
 	bool m_isMarked;
 	bool m_shouldDisplayCost = true;
+	bool m_shouldDisplayVectorField = true;
 public:
 	Tile(int t_cost, sf::Vector2f* t_goalVector, sf::Vector2f t_position, int t_width, int t_height, sf::Font& t_font, sf::Color t_colour, int t_row, int t_col);
 	void setId(int t_id)
@@ -104,6 +105,12 @@ public:
 	void setShouldDisplayCost(bool t_shouldDisplayCost)
 	{
 		m_shouldDisplayCost = t_shouldDisplayCost;
+	}
+
+	bool shouldDisplayVectorField() { return m_shouldDisplayVectorField; }
+	void setDisplayVectorField(bool t_shouldDisplayVectorField)
+	{
+		m_shouldDisplayVectorField = t_shouldDisplayVectorField;
 	}
 
 	sf::Vector2f getVectorField() { return *m_goalVector; }

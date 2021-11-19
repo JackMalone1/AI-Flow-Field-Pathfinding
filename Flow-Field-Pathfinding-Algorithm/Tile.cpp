@@ -20,7 +20,7 @@ void Tile::draw(sf::RenderTarget& t_target, sf::RenderStates t_states) const
 {
 	t_target.draw(m_shape, t_states);
 	if(m_shouldDisplayCost) t_target.draw(m_displayCost, t_states);
-	if (m_vectorToGoal.getVertexCount() > 0) t_target.draw(m_vectorToGoal, t_states);
+	if (m_vectorToGoal.getVertexCount() > 0 && m_shouldDisplayVectorField) t_target.draw(m_vectorToGoal, t_states);
 }
 
 void Tile::initSprite(sf::Vector2f t_dimensions, sf::Color t_colour)
