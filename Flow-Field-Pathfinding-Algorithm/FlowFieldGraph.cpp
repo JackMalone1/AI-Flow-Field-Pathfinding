@@ -17,7 +17,7 @@ void FlowFieldGraph::checkTileMouseClick(bool t_isLeftMouseClick, sf::Vector2i t
 
 FlowFieldGraph::FlowFieldGraph(sf::Font& t_font, sf::RenderWindow& t_window) : m_renderWindow{ t_window }, m_font{t_font}
 {
-	int y = 2.5;
+	int y = -5;
 	int x = 15;
 	int id = 0;
 	sf::Color colour = sf::Color(0,0,255,125);

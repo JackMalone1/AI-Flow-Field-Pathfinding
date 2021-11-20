@@ -9,6 +9,8 @@ Game::Game() :
 	srand(time(NULL));
 	if (!m_font.loadFromFile("ASSETS//FONTS//ariblk.ttf")) std::cout << "Error loading font" << std::endl;
 	m_flowFieldGraph = new FlowFieldGraph(m_font, m_window);
+	m_buttons.push_back(new Button(sf::Vector2f(1250, 200), "Display Costs (z)", 200, 50, "DISPLAY_COSTS"));
+	m_buttons.push_back(new Button(sf::Vector2f(1250, 400), "Display Vectors (v)", 200, 50, "DISPLAY_VECTORS"));
 }
 
 
@@ -34,6 +36,11 @@ void Game::run()
 		}
 		render();
 	}
+}
+
+void Game::displayCosts()
+{
+	m_flowFieldGraph->updateVectorFieldDisplay();
 }
 
 void Game::processEvents()
@@ -75,6 +82,20 @@ void Game::processKeys(sf::Event t_event)
 	{
 		std::cout << "user pressed left mouse button.\n";
 		m_flowFieldGraph->checkTileMouseClick(true, sf::Mouse::getPosition(m_window));
+		for (auto& button : m_buttons)
+		{
+			if (button->onButtonPress(sf::Mouse::getPosition(m_window)))
+			{
+				if (button->buttonType() == "DISPLAY_COSTS")
+				{
+					m_flowFieldGraph->updateTilesCostDisplay();
+				}
+				else if (button->buttonType() == "DISPLAY_VECTORS")
+				{
+					m_flowFieldGraph->updateVectorFieldDisplay();
+				}
+			}
+		}
 	}
 
 	if (sf::Mouse::isButtonPressed(sf::Mouse::Right))
@@ -103,6 +124,10 @@ void Game::render()
 {
 	m_window.clear(sf::Color::White);
 	m_flowFieldGraph->render();
+	for (auto& button : m_buttons)
+	{
+		m_window.draw(*button);
+	}
 	m_window.display();
 }
 

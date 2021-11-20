@@ -11,8 +11,11 @@
 #include <limits>
 #include <stack>
 #include <queue>
-
+#include "Button.h"
 #include "FlowFieldGraph.h"
+#include <vector>
+#include "Utils.h"
+
 class Game
 {
 public:
@@ -20,7 +23,7 @@ public:
 	~Game();
 
 	void run();
-
+	void displayCosts();
 private:
 	static constexpr int NUM_ROWS = 50;
 	static constexpr int NUM_COLS = 50;
@@ -34,6 +37,7 @@ private:
 
 	bool m_exitGame;
 	FlowFieldGraph* m_flowFieldGraph;
+	std::vector<Button*> m_buttons;
 };
 
 #endif 
