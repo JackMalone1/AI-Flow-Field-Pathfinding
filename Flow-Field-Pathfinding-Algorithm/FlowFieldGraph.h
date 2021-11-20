@@ -10,7 +10,7 @@
 #include <stack>
 #include <queue>
 #include "Utils.h"
-
+#include <list>
 class FlowFieldGraph
 {
 private:
@@ -18,6 +18,7 @@ private:
 	static constexpr int NUM_COLS = 50;
 	std::array<std::array<Tile*, NUM_ROWS>, NUM_COLS> m_tiles;
 	std::queue<Tile*> tiles;
+	std::list<Tile*> path;
 	Tile* m_goalNode = nullptr;
 	Tile* m_startNode = nullptr;
 	sf::RenderWindow& m_renderWindow;
@@ -27,6 +28,7 @@ public:
 	FlowFieldGraph(sf::Font& t_font, sf::RenderWindow& t_window);
 	void render();
 	void updateTilesCostDisplay();
+	void updateTilesIntegrationCostDisplay();
 	void updateVectorFieldDisplay();
 	void placeObstructedTIle(sf::Vector2f t_mousePosition);
 private:

@@ -6,12 +6,13 @@
 class Tile : public sf::Drawable
 {
 private:
-	sf::Vector2f* m_goalVector;
+	sf::Vector2f m_goalVector;
 	sf::VertexArray m_vectorToGoal{ sf::Lines, 2 };
 	sf::Vector2f m_position;
 	int m_cost;
 	float m_integrationFieldCost;
 	sf::Text m_displayCost;
+	sf::Text m_displayIntegrationCost;
 	sf::Font& m_font;
 	sf::RectangleShape m_shape;
 	int m_id;
@@ -22,9 +23,11 @@ private:
 	sf::Color m_defaultColour;
 	bool m_isMarked;
 	bool m_shouldDisplayCost = true;
+	bool m_shouldDisplayIntegrationCost = true;
 	bool m_shouldDisplayVectorField = true;
+	sf::Vector2i m_goalNode;
 public:
-	Tile(int t_cost, sf::Vector2f* t_goalVector, sf::Vector2f t_position, int t_width, int t_height, sf::Font& t_font, sf::Color t_colour, int t_row, int t_col);
+	Tile(int t_cost, sf::Vector2f t_goalVector, sf::Vector2f t_position, int t_width, int t_height, sf::Font& t_font, sf::Color t_colour, int t_row, int t_col);
 	void setId(int t_id)
 	{
 		m_id = t_id;
@@ -76,6 +79,7 @@ public:
 	void setIntegrationCost(float t_integrationCost)
 	{
 		m_integrationFieldCost = t_integrationCost;
+		m_displayIntegrationCost.setString(std::to_string(m_integrationFieldCost / 10000000.0f));
 	}
 
 	float getIntegrationCost() { return m_integrationFieldCost; }
@@ -107,21 +111,27 @@ public:
 		m_shouldDisplayCost = t_shouldDisplayCost;
 	}
 
+	bool shouldDisplayIntegrationCost() { return m_shouldDisplayIntegrationCost; }
+	void setShouldDisplayIntegrationCost(bool t_shouldDisplayCost)
+	{
+		m_shouldDisplayIntegrationCost = t_shouldDisplayCost;
+	}
+
 	bool shouldDisplayVectorField() { return m_shouldDisplayVectorField; }
 	void setDisplayVectorField(bool t_shouldDisplayVectorField)
 	{
 		m_shouldDisplayVectorField = t_shouldDisplayVectorField;
 	}
 
-	sf::Vector2f getVectorField() { return *m_goalVector; }
-	void setVectorField(sf::Vector2f* t_vectorField)
+	sf::Vector2f getVectorField() { return m_goalVector; }
+	void setVectorField(sf::Vector2f t_vectorField)
 	{
 		m_goalVector = t_vectorField;
-		if (m_goalVector && !m_isGoalNode)
+		if (!m_isGoalNode)
 		{
 			m_vectorToGoal.clear();
-			m_vectorToGoal.append(sf::Vertex(m_position, sf::Color::Black));
-			m_vectorToGoal.append(sf::Vertex(*m_goalVector, sf::Color::Black));
+			m_vectorToGoal.append(sf::Vertex(m_position, sf::Color::Red));
+			m_vectorToGoal.append(sf::Vertex(m_goalVector, sf::Color::Black));
 		}
 		else
 		{
@@ -142,6 +152,16 @@ public:
 	bool isAlreadyOnPath() 
 	{
 		return m_shape.getFillColor() == sf::Color::Yellow;
+	}
+
+	sf::Vector2i getGoalNode()
+	{
+		return m_goalNode;
+	}
+
+	void setGoalNode(sf::Vector2i t_goalNode)
+	{
+		m_goalNode = t_goalNode;
 	}
 private:
 	virtual void draw(sf::RenderTarget& t_target, sf::RenderStates t_states) const;

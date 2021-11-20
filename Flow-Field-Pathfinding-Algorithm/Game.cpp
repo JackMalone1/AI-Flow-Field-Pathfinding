@@ -10,7 +10,8 @@ Game::Game() :
 	if (!m_font.loadFromFile("ASSETS//FONTS//ariblk.ttf")) std::cout << "Error loading font" << std::endl;
 	m_flowFieldGraph = new FlowFieldGraph(m_font, m_window);
 	m_buttons.push_back(new Button(sf::Vector2f(1250, 200), "Display Costs (z)", 200, 50, "DISPLAY_COSTS"));
-	m_buttons.push_back(new Button(sf::Vector2f(1250, 400), "Display Vectors (v)", 200, 50, "DISPLAY_VECTORS"));
+	m_buttons.push_back(new Button(sf::Vector2f(1250, 400), "Display IntCosts (x)", 200, 50, "DISPLAY_INT_COSTS"));
+	m_buttons.push_back(new Button(sf::Vector2f(1250, 600), "Display Vectors (v)", 200, 50, "DISPLAY_VECTORS"));
 }
 
 
@@ -93,6 +94,10 @@ void Game::processKeys(sf::Event t_event)
 				else if (button->buttonType() == "DISPLAY_VECTORS")
 				{
 					m_flowFieldGraph->updateVectorFieldDisplay();
+				}
+				else if (button->buttonType() == "DISPLAY_INT_COSTS")
+				{
+					m_flowFieldGraph->updateTilesIntegrationCostDisplay();
 				}
 			}
 		}

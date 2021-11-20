@@ -29,7 +29,7 @@ FlowFieldGraph::FlowFieldGraph(sf::Font& t_font, sf::RenderWindow& t_window) : m
 		{
 			auto& tile = m_tiles.at(row).at(col);
 			x += 20;
-			tile = new Tile(900000, new sf::Vector2f(0.0f, 0.0f), sf::Vector2f(x, y), 20.0f, 20.0f, m_font, colour, row, col);
+			tile = new Tile(900000, sf::Vector2f(0.0f, 0.0f), sf::Vector2f(x, y), 20.0f, 20.0f, m_font, colour, row, col);
 			id++;
 			tile->setId(id);
 		}
@@ -98,12 +98,11 @@ void FlowFieldGraph::generateTileIntegrationCostWithNeighbour(int t_row, int t_c
 			Tile* tile = m_tiles.at(row).at(col);
 			if (!tile->getMarked())
 			{
-				tile->setIntegrationCost((tile->getCost()) +
-					Utils::DistanceBetweenPositions(m_goalNode->getPosition(), tile->getPosition()) * 1000);
-				if (!tile->isTraversable())
-				{
-					tile->setIntegrationCost(std::numeric_limits<float>::max());
-				}
+				float distX = static_cast<float>(m_goalNode->getPosition().x) - tile->getPosition().x;
+				float distY = static_cast<float>(m_goalNode->getPosition().y) - tile->getPosition().y;
+				float distance = sqrt(distX * distX + distY * distY);
+				tile->setIntegrationCost(static_cast<float>((tile->getCost()) * 1000.0f) + distance);
+				if (!tile->isTraversable()) tile->setIntegrationCost(std::numeric_limits<float>::max());
 				tile->setMarked(true);
 				tiles.push(tile);
 			}
@@ -123,7 +122,6 @@ void FlowFieldGraph::generateIntegrationField()
 	m_goalNode->setIntegrationCost(0);
 	m_goalNode->setMarked(true);
 	sf::Vector2i goalPos = m_goalNode->getRowAndCol();
-
 	tiles.push(m_goalNode);
 	while (!tiles.empty())
 	{
@@ -137,28 +135,27 @@ void FlowFieldGraph::generateIntegrationField()
 void FlowFieldGraph::generateVectorFieldWithNeighbour(int t_row, int t_col)
 {
 	Tile& tile = *m_tiles.at(t_row).at(t_col);
-	if (tile.getMarked()) return;
 	float lowestIntegrationCost = std::numeric_limits<float>::max();
 	sf::Vector2f positionOfTile = tile.getPosition();
-	for (int direction = 0; direction < 9; direction++)
+	sf::Vector2i rowAndCol = tile.getRowAndCol();
+	for (int direction = 0; direction < 9; ++direction)
 	{
 		if (direction == 4) continue;
-		int row = t_row + ((direction % 3) - 1);
-		int col = t_col + ((direction / 3) - 1);
-
+		int row = t_row + ((direction / 3) - 1);
+		int col = t_col + ((direction % 3) - 1);
 		if (row >= 0 && row < NUM_ROWS && col >= 0 && col < NUM_COLS)
 		{
 			float integrationCost = m_tiles.at(row).at(col)->getIntegrationCost();
-			if (integrationCost < lowestIntegrationCost)
+			if (integrationCost < lowestIntegrationCost && !m_tiles.at(row).at(col)->isStartNode())
 			{
 				lowestIntegrationCost = integrationCost;
+				rowAndCol = sf::Vector2i(row, col);
 				positionOfTile = m_tiles.at(row).at(col)->getPosition();
 			}
 		}
 	}
-	
-	tile.setMarked(true);
-	tile.setVectorField(new sf::Vector2f(positionOfTile));
+	tile.setGoalNode(rowAndCol);
+	tile.setVectorField(sf::Vector2f(positionOfTile));
 }
 
 void FlowFieldGraph::generateVectorField()
@@ -170,41 +167,43 @@ void FlowFieldGraph::generateVectorField()
 			tile->setMarked(false);
 		}
 	}
-	m_goalNode->setVectorField(new sf::Vector2f(0.0f, 0.0f));
+	m_goalNode->setVectorField(sf::Vector2f(0.0f, 0.0f));
 	m_goalNode->setMarked(true);
-	sf::Vector2i goalPos = m_goalNode->getRowAndCol();
 
 	for (auto& row : m_tiles)
 	{
 		for (auto& tile : row)
 		{
-			generateVectorFieldWithNeighbour(tile->getRowAndCol().x, tile->getRowAndCol().y);
+			if (!tile->isTraversable())
+			{
+				tile->setVectorField(tile->getPosition());
+				continue;
+			}
+			else
+			{
+				generateVectorFieldWithNeighbour(tile->getRowAndCol().x, tile->getRowAndCol().y);
+			}
 		}
 	}
 
-	m_goalNode->setVectorField(new sf::Vector2f(0.0f, 0.0f));
+	m_goalNode->setVectorField(sf::Vector2f(0.0f, 0.0f));
 }
 
 void FlowFieldGraph::generatePathTowardsGoal()
 {
 	int tilesChecked = 0;
-	tiles.push(m_startNode);
 	bool reachedGoalNode = false;
-	while (!tiles.empty() && tilesChecked < 25000)
+	path.clear();
+	path.push_back(m_startNode);
+	while (path.back() != m_goalNode && tilesChecked < 25000)
 	{
-		Tile* tile = tiles.front();
-		tiles.pop();
-		if (tile->isGoalNode())
-		{
-			std::queue<Tile*> empty;
-			tiles.swap(empty);
-			reachedGoalNode = true;
-			return;
-		}
-		generatePathTowardsGoalWithNeighbour(tile->getRowAndCol().x, tile->getRowAndCol().y);
+		path.back()->setColour(sf::Color::Yellow);
+		sf::Vector2i goalNode = path.back()->getGoalNode();
+		path.push_back(m_tiles.at(goalNode.x).at(goalNode.y));
 		tilesChecked++;
 		if (tilesChecked == 25000) std::cout << "Limit Reached" << std::endl;
 	}
+	if (path.back() == m_goalNode) reachedGoalNode = true;
 	if (!reachedGoalNode)
 	{
 		std::cout << "no valid path found to goal so not displaying path \n";
@@ -215,33 +214,8 @@ void FlowFieldGraph::generatePathTowardsGoal()
 				tile->updateDisplayColour();
 			}
 		}
-	}
+	} 
 }
-
-void FlowFieldGraph::generatePathTowardsGoalWithNeighbour(int t_row, int t_col)
-{
-	Tile& tile = *m_tiles.at(t_row).at(t_col);
-	float lowestIntegrationCost = std::numeric_limits<float>::max();
-	sf::Vector2i rowAndCol = tile.getRowAndCol();
-	for (int direction = 0; direction < 9; direction++)
-	{
-		if (direction == 4) continue;
-		int row = t_row + ((direction % 3) - 1);
-		int col = t_col + ((direction / 3) - 1);
-		if (row >= 0 && row < NUM_ROWS && col >= 0 && col < NUM_COLS)
-		{
-			float integrationCost = m_tiles.at(row).at(col)->getIntegrationCost();
-			if (integrationCost < lowestIntegrationCost && m_tiles.at(row).at(col)->isTraversable() && !m_tiles.at(row).at(col)->isStartNode() && !m_tiles.at(row).at(col)->isAlreadyOnPath())
-			{
-				lowestIntegrationCost = integrationCost;
-				rowAndCol = sf::Vector2i(row, col);
-			}
-		}
-	}
-	tiles.push(m_tiles.at(rowAndCol.x).at(rowAndCol.y));
-	m_tiles.at(rowAndCol.x).at(rowAndCol.y)->setColour(sf::Color::Yellow);
-}
-
 
 void FlowFieldGraph::render()
 {
@@ -261,6 +235,17 @@ void FlowFieldGraph::updateTilesCostDisplay()
 		for (auto& tile : row)
 		{
 			tile->setShouldDisplayCost(!tile->shouldDisplayCost());
+		}
+	}
+}
+
+void FlowFieldGraph::updateTilesIntegrationCostDisplay()
+{
+	for (auto& row : m_tiles)
+	{
+		for (auto& tile : row)
+		{
+			tile->setShouldDisplayIntegrationCost(!tile->shouldDisplayIntegrationCost());
 		}
 	}
 }
